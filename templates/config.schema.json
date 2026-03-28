@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://couch-potato.dev/schemas/config.schema.json",
+  "title": "Couch Potato Config",
+  "description": "Schema for .couch/config.json",
+  "type": "object",
+  "required": ["version", "skill"],
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "Config schema version (e.g. \"3.0.0\")"
+    },
+    "skill": {
+      "type": "string",
+      "description": "Name of the installed skill that drives the swarm (e.g. \"couch-potato\")"
+    },
+    "server_ports": {
+      "type": "object",
+      "description": "Named port assignments for the project's servers",
+      "additionalProperties": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 65535
+      },
+      "examples": [
+        { "dev": 3000, "production_local": 3001, "test": 3002 }
+      ]
+    },
+    "project_path": {
+      "type": "string",
+      "description": "Path to the project root, relative to the repository root (use \".\" for monorepo root)"
+    },
+    "frontend_path": {
+      "type": "string",
+      "description": "Path to the frontend app, relative to the repository root (e.g. \"apps/frontend\")"
+    },
+    "check_command": {
+      "type": "string",
+      "description": "Command Coders run after each change to type-check the project (e.g. \"pnpm type-check\")"
+    },
+    "lint_command": {
+      "type": "string",
+      "description": "Command Coders run after each change to lint and auto-fix (e.g. \"pnpm lint:fix\")"
+    },
+    "policy": {
+      "type": "object",
+      "description": "Swarm behaviour policy overrides",
+      "additionalProperties": false,
+      "properties": {
+        "enable_fast_track": {
+          "type": "boolean",
+          "description": "Allow Team Lead to bypass Architect planning for simple, well-scoped tasks"
+        },
+        "review_prompt_required": {
+          "type": "boolean",
+          "description": "Team Lead must ask the user about code review before proceeding to shutdown"
+        },
+        "model_resolution_priority": {
+          "type": "array",
+          "description": "Ordered list of strategies for resolving which model to use for an agent",
+          "items": {
+            "type": "string",
+            "enum": ["user_override", "complexity_rule", "task_model", "agent_default"]
+          },
+          "examples": [
+            ["user_override", "complexity_rule", "task_model", "agent_default"]
+          ]
+        },
+        "default_requires_verification_by_type": {
+          "type": "object",
+          "description": "Whether Tester verification is required by default for each task type",
+          "additionalProperties": {
+            "type": "boolean"
+          },
+          "examples": [
+            { "code": true, "refactor": true, "i18n": false, "style": false, "test": false }
+          ]
+        }
+      }
+    }
+  }
+}
