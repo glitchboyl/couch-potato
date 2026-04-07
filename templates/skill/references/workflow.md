@@ -1,6 +1,6 @@
 # Couch Potato — Workflow Reference
 
-Part of the Couch Potato skill definition. See SKILL.md for Hard Constraints and Principles.
+Part of the Couch Potato skill definition. See SKILL.md for the Team Lead operational manual.
 
 ---
 

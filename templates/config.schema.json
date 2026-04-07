@@ -4,7 +4,7 @@
   "title": "Couch Potato Config",
   "description": "Schema for .couch/config.json",
   "type": "object",
-  "required": ["version", "skill", "server_ports"],
+  "required": ["version", "skill"],
   "additionalProperties": false,
   "properties": {
     "version": {
@@ -15,9 +15,13 @@
       "type": "string",
       "description": "Name of the installed skill that drives the swarm (e.g. \"couch-potato\")"
     },
+    "stack": {
+      "type": "string",
+      "description": "Detected stack label (e.g. \"Node.js + Next.js\"). Persisted from the init-flow adaptation plan so agents can read project context without re-scanning. Optional — omit for projects where stack detection was skipped."
+    },
     "server_ports": {
       "type": "object",
-      "description": "Named port assignments for the project's servers. Can be an empty object if no dev server is used.",
+      "description": "Named port assignments for the project's servers. Optional — omit for projects with no dev server (CLIs, libraries, batch scripts).",
       "additionalProperties": {
         "type": "integer",
         "minimum": 1,
@@ -33,7 +37,7 @@
     },
     "frontend_path": {
       "type": "string",
-      "description": "Path to the frontend app, relative to the repository root (e.g. \"apps/frontend\")"
+      "description": "Path to the frontend app, relative to the repository root (e.g. \"apps/frontend\"). Optional — omit for backend-only projects (Go CLIs, Rust libraries, Python ML pipelines, etc.) that have no frontend."
     },
     "check_command": {
       "type": "string",

@@ -222,6 +222,10 @@ The final adaptation plan object passed to the install phase has exactly these f
 }
 ```
 
+### Persistence to config.json
+
+The `stack_label` field is persisted into the installed `.couch/config.json` as the top-level `stack` field by the install flow (see install-flow.md Section 2 Step 5). Other plan fields like `check_command`, `lint_command`, etc. map directly to like-named config fields. Conditional fields (`server_ports`, `frontend_path`) are omitted from the generated config when not applicable — see install-flow.md Section 2 Step 5.
+
 ### Conflict Resolution (Existing Agents)
 
 When `installation.has_agents` is true or `installation.has_couch_potato_skill` is true:

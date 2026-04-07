@@ -48,6 +48,9 @@ Write all files to `.couch/.staging/` before touching any final locations. This 
         tester.md
         challenger.md
         retrospective.md
+    hooks/
+      restrict_write_path.sh
+      restrict_read_path.sh
   agents/                 -> final: .claude/agents/
     architect.md
     researcher.md
@@ -66,7 +69,7 @@ Write all files to `.couch/.staging/` before touching any final locations. This 
 
 1. **Create staging directory**: `mkdir -p .couch/.staging/`
 
-2. **Copy skill templates**: Copy the entire `templates/skill/` tree into `.couch/.staging/skill/`. Preserve directory structure exactly.
+2. **Copy skill templates**: Copy the entire `templates/skill/` tree into `.couch/.staging/skill/`. Preserve directory structure exactly. This includes the `hooks/` subdirectory containing two executable scripts: `restrict_write_path.sh` and `restrict_read_path.sh`. Copy must preserve executable bits (e.g., `cp -a` or equivalent) — the hook scripts must remain executable after staging.
 
 3. **Copy agent templates**: Copy all files from `templates/agents/` into `.couch/.staging/agents/`.
 
@@ -78,11 +81,10 @@ Write all files to `.couch/.staging/` before touching any final locations. This 
    {
      "version": "3.0.0",
      "skill": "couch-potato",
-     "server_ports": {
-       "dev": <plan.dev_port>
-     },
+     // "stack": <plan.stack_label>         — include whenever plan.stack_label is present
+     // "server_ports": { "dev": <plan.dev_port> }  — include only when plan.dev_port is present
      "project_path": ".",
-     "frontend_path": <plan.frontend_path or ".">,
+     // "frontend_path": <plan.frontend_path>  — include only when frontend was detected (plan.frontend_path is set and not ".")
      "check_command": <plan.check_command>,
      "lint_command": <plan.lint_command>,
      "build_command": <plan.build_command>,
@@ -102,6 +104,11 @@ Write all files to `.couch/.staging/` before touching any final locations. This 
    }
    ```
 
+   **Conditional fields**:
+   - `stack`: include as a top-level string whenever `plan.stack_label` is present (e.g. `"Node.js + Next.js"`). Omit if the plan has no stack label.
+   - `server_ports`: include only when `plan.dev_port` is present. For projects with no dev server (CLIs, libraries, batch scripts), omit this field entirely.
+   - `frontend_path`: include only when a frontend was detected — i.e., `plan.frontend_path` is set and its value is not `"."`. For backend-only projects (Go CLIs, Rust libraries, Python ML pipelines), omit this field entirely.
+
    If the plan includes an existing config to merge (`agent_conflict_action = "merge"`), read the existing `.couch/config.json` first. Keep existing values for any field that is already set; only fill missing fields from the plan. The `version` field always updates to `"3.0.0"`.
 
 6. **Generate proposals_log.json**: Write `.couch/.staging/proposals_log.json` with content: `{"proposals":[]}`
@@ -114,6 +121,8 @@ Write all files to `.couch/.staging/` before touching any final locations. This 
        { "staged": ".couch/.staging/skill/SKILL.md", "target": ".claude/skills/couch-potato/SKILL.md" },
        { "staged": ".couch/.staging/agents/architect.md", "target": ".claude/agents/architect.md" },
        ...
+       { "staged": ".couch/.staging/skill/hooks/restrict_write_path.sh", "target": ".claude/skills/couch-potato/hooks/restrict_write_path.sh" },
+       { "staged": ".couch/.staging/skill/hooks/restrict_read_path.sh", "target": ".claude/skills/couch-potato/hooks/restrict_read_path.sh" },
        { "staged": ".couch/.staging/proposals_log.json", "target": ".couch/proposals_log.json" }
      ],
      "directories": [
@@ -169,6 +178,7 @@ Process the manifest in order:
 
 1. **Create target directories** if they don't exist:
    - `.claude/skills/couch-potato/` and its subdirectories
+   - `.claude/skills/couch-potato/hooks/`
    - `.claude/agents/`
    - `.claude/skills/codex-bridge/` (only if codex bridge is staged)
    - `.couch/requirements/`
@@ -176,6 +186,7 @@ Process the manifest in order:
 
 2. **Install files from manifest**:
    - For each entry in `manifest.files`: copy `staged` to `target`.
+   - For files under `hooks/`: preserve executable permissions during copy (e.g., `cp -p` or `install -m 755`). Hook scripts must remain executable at their final path.
    - For agents specifically: if the adaptation plan says `merge`, do NOT delete existing files in `.claude/agents/` — only add or overwrite files that are in the manifest. If `overwrite`, clear the directory first (after backing up).
 
 3. **Install config**:
@@ -301,6 +312,8 @@ Verify the installation is complete and functional.
 
 1. **File existence**: Glob for all expected files:
    - `.claude/skills/couch-potato/SKILL.md` — must exist
+   - `.claude/skills/couch-potato/hooks/restrict_write_path.sh` — must exist and be executable
+   - `.claude/skills/couch-potato/hooks/restrict_read_path.sh` — must exist and be executable
    - `.claude/agents/*.md` — must contain at least 5 files (architect, researcher, coder, tester, retrospective)
    - `.couch/config.json` — must exist
    - `.couch/requirements/` — must be a directory

@@ -1,6 +1,6 @@
 # Couch Potato — Protocol Reference
 
-Part of the Couch Potato skill definition. See SKILL.md for Hard Constraints and Principles.
+Part of the Couch Potato skill definition. See SKILL.md for the Team Lead operational manual.
 
 ---
 
@@ -20,7 +20,15 @@ Part of the Couch Potato skill definition. See SKILL.md for Hard Constraints and
 ### Spawn Prompt Template
 Roster agents MUST be spawned using their corresponding `subagent_type` from `.claude/agents/` — never substitute a roster role with a generic subagent type.
 
-**Reuse before spawn**: Check for idle agents of the required type before spawning (Hard Constraints). If a match exists, SendMessage them instead. **Exception**: if the idle agent's last task failed or was escalated, spawn a fresh instance — a degraded context is unlikely to produce better results (see Principle 4: Failure is input).
+**Reuse before spawn (default).** Check for idle agents of the required type and send them work via SendMessage rather than spawning.
+
+**Force fresh spawn when:**
+1. The idle agent's last task failed or was escalated — degraded context is unlikely to produce better results.
+2. The work is a review or judge task that requires an unbiased perspective — reuse would contaminate the review with prior task context.
+
+**How to check idle agent state:** Checking idle agents before spawn: (1) Read `~/.claude/teams/{req-id}/config.json` — the `members` array lists all agents currently on the team with their `name` and `agentType`. (2) Call TaskList — an agent with no in_progress tasks is a candidate for reuse. If the agent's last task shows completed, it is idle and healthy. If it shows in_progress with no recent activity, treat it as degraded and spawn fresh. There is no explicit idle-status field in the harness; idle must be inferred from task state. Two tool calls total: one Read, one TaskList. If Team Lead received a TeammateIdle message from the agent, that supersedes TaskList inference.
+
+**Model tier.** Model tier for each agent is resolved once at spawn time using this precedence: (1) CLAUDE_CODE_SUBAGENT_MODEL env var, (2) `model:` parameter passed in the Agent tool call, (3) agent definition frontmatter `model:` field, (4) main session's model. Once spawned, an agent's model does not change: SendMessage resumes the existing session with the original model. Opus orchestrators risk non-deterministically overriding Sonnet frontmatter by inheriting their own model in Agent tool calls. To prevent this, always pass `model:` explicitly in every Agent tool call when spawning roster agents — even if it matches the frontmatter default. NEVER downgrade an agent's model below its frontmatter default. For Coder tasks with complexity L, upgrade to opus at spawn time by passing `model: "opus"` in the Agent tool call.
 
 Every permanent agent spawn includes: `team_name: <req-id>`, role, SOUL (read from `references/souls/<role>.md` and included verbatim), requirement ID + title, project root, dev server port, state dir (`.couch/requirements/<req-id>/`), relevant MCP tools, and "Check TaskList and start working."
 
