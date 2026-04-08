@@ -17,7 +17,7 @@
     },
     "stack": {
       "type": "string",
-      "description": "Detected stack label (e.g. \"Node.js + Next.js\"). Persisted from the init-flow adaptation plan so agents can read project context without re-scanning. Optional — omit for projects where stack detection was skipped."
+      "description": "Detected stack label (e.g. \"Node.js + Next.js\"). Persisted from the init-skill adaptation plan so agents can read project context without re-scanning. Optional — omit for projects where stack detection was skipped."
     },
     "server_ports": {
       "type": "object",

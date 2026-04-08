@@ -4,6 +4,27 @@ All notable changes to this project will be documented in this file. Format: Kee
 
 ## [Unreleased]
 
+## [3.3.0] - 2026-04-08
+
+### Removed
+
+- `templates/skill/` and `templates/agents/` trees (canonical sources fully migrated to repo-root `skills/`, `hooks/`, `agents/`, `references/` in v3.2.0)
+- `setup.md` legacy entry point
+- `references/init-flow.md` and `references/install-flow.md` (superseded by `skills/init/SKILL.md`)
+
+### Changed
+
+- `templates/config.schema.json` → `references/config.schema.json` (relocated; only reference updated in `skills/update/SKILL.md` file-classification table)
+- `templates/skills/codex-bridge/` → `skills/codex-bridge/` (now discoverable as a plugin skill)
+- `README.md`: removed "Migrating from v3.1.0" subsection — migration path is simply `git checkout v3.1.0` in this repo
+- `CLAUDE.md`: Structure diagram and Key paths updated to reflect plugin layout; removed `setup.md` / `templates/` references
+- `references/stacks.md`: removed `init-flow.md` section reference
+- `references/config.schema.json`: `stack` field description updated to reference the init-skill adaptation plan
+
+### Breaking
+
+- Anyone still invoking `Read setup.md and follow it` must first `git checkout v3.1.0` in this repo — the file no longer exists in 3.3.0. Recommended path: persistent plugin install per `README.md`.
+
 ## [3.2.1] - 2026-04-08
 
 ### Added

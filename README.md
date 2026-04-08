@@ -93,36 +93,6 @@ claude --plugin-dir /path/to/couch-potato-setup
 
 Then run `/couch-potato:init` in that session.
 
-### Migrating from v3.1.0 (skill format)
-
-If you installed Couch Potato v3.1.0 using the legacy skill format (`Read setup.md and follow it`), auto-migration to the plugin format (v3.2.0+) is **not supported** in this release. See `docs/plugin-migration-design.md` for the migration design. Manual steps: uninstall the old skill files from `.claude/skills/couch-potato/` and re-run the plugin install flow above.
-
-### Installing v3.1.0 (legacy skill format)
-
-> This is the legacy install path. Use the plugin install above for new installs.
-
-1. Clone this repo somewhere accessible:
-   ```bash
-   git clone https://github.com/glitchboyl/couch-potato-setup.git
-   ```
-
-2. In your project, open Claude Code and say:
-   ```
-   Read ~/path/to/couch-potato-setup/setup.md and follow it
-   ```
-
-3. The installer will:
-   - Auto-detect your tech stack, framework, and commands
-   - Present an adaptation plan for your confirmation
-   - Install skill files, agent definitions, and config
-   - Optionally generate or patch your CLAUDE.md
-
-4. Restart Claude Code to pick up new settings.
-
-#### Manual setup (v3.1.0)
-
-If auto-detection doesn't fit your project, ask for manual setup — you'll fill in the config values directly.
-
 ## Usage
 
 After installation, invoke the swarm:

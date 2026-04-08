@@ -166,7 +166,7 @@ When multiple manifest files are detected at the project root, do not guess — 
 | `framework` | `["Next.js", null]` |
 | ... | ... |
 
-Note: The user will resolve which stack is primary during the confirmation flow (init-flow.md Section 4, Item 1).
+Note: The user will resolve which stack is primary during the init-skill confirmation flow.
 
 **Other ambiguous scenarios:**
 

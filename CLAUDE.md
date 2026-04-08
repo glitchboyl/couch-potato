@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-Couch Potato setup package — contains templates, agent definitions, and reference docs for installing the Couch Potato agent swarm into projects.
+Couch Potato Claude Code plugin — dual-workflow agent swarm (team-mode + multi-agent-mode) with `/couch-potato:init` and `/couch-potato:update` commands.
 
 **Tech stack**: Markdown + JSON (documentation/template repository)
 **Package manager**: N/A
@@ -11,23 +11,27 @@ Couch Potato setup package — contains templates, agent definitions, and refere
 
 ```
 .
-├── setup.md                    # Setup entry point
-├── references/                 # Setup flow documentation
-│   ├── init-flow.md
-│   ├── install-flow.md
+├── .claude-plugin/             # Plugin manifest + marketplace
+│   ├── plugin.json
+│   └── marketplace.json
+├── skills/                     # /couch-potato:init + /couch-potato:update
+├── hooks/                      # SessionStart + PreToolUse hooks
+├── agents/                     # Agent definitions (architect, coder, ...)
+├── references/                 # Workflow docs + mode variants + schemas
+│   ├── team-mode/
+│   ├── multi-agent-mode/
+│   ├── schemas.md
 │   ├── stacks.md
-│   └── claude-md-guide.md
-└── templates/                  # Files copied during installation
-    ├── config.schema.json
-    ├── agents/
-    ├── skill/
-    └── skills/codex-bridge/
+│   ├── claude-md-guide.md
+│   └── config.schema.json
+└── docs/                       # Design docs
 ```
 
 Key paths:
-- `setup.md` — main entry point for AI-driven setup
-- `references/` — detailed flow instructions for init and install phases
-- `templates/` — all files that get copied into target projects
+- `.claude-plugin/plugin.json` — plugin manifest
+- `skills/init/SKILL.md` — `/couch-potato:init` entry point
+- `skills/update/SKILL.md` — `/couch-potato:update` entry point
+- `references/team-mode/`, `references/multi-agent-mode/` — mode-specific workflow content
 
 ## Commands
 
@@ -38,7 +42,7 @@ Key paths:
 ## Conventions
 
 - **Imports**: N/A
-- **File placement**: Templates go in `templates/`, reference docs in `references/`
+- **File placement**: Plugin components at repo root (`skills/`, `hooks/`, `agents/`, `references/`); only `plugin.json` + `marketplace.json` live in `.claude-plugin/`
 - **Naming**: kebab-case for directories, lowercase for files
 - **i18n**: none
 

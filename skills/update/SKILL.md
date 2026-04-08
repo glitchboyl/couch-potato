@@ -114,7 +114,7 @@ For each file in the classification table below (filtered by installed mode), ap
 | `references/multi-agent-mode/souls/` (all files, iterated) | `.claude/skills/couch-potato/references/multi-agent-mode/souls/` | Verbatim | multi-agent installs |
 | `references/schemas.md` | `.claude/skills/couch-potato/references/schemas.md` | Verbatim | both modes |
 | `hooks/restrict_write_path.sh` | `.claude/skills/couch-potato/hooks/restrict_write_path.sh` | Verbatim | both modes |
-| `templates/config.schema.json` | `.couch/config.schema.json` | Verbatim | both modes |
+| `references/config.schema.json` | `.couch/config.schema.json` | Verbatim | both modes |
 | `agents/architect.md` | `.claude/agents/architect.md` | Verbatim | both modes |
 | `agents/researcher.md` | `.claude/agents/researcher.md` | Verbatim | both modes |
 | `agents/coder.md` | `.claude/agents/coder.md` | Verbatim | both modes |
