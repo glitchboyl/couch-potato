@@ -1,7 +1,7 @@
 # Plugin Migration Design
 
 **Type**: Architecture Decision Record (ADR)
-**Status**: Proposed
+**Status**: Proposed — **see Errata (2026-04-07) at bottom**
 **Version context**: Couch Potato v3.1.0 → v3.2.0
 **Purpose**: Capture the full plugin refactor decision so req-004 can execute without redoing any research.
 
@@ -85,6 +85,8 @@ The plugin root is the directory registered with Claude Code (name: `couch-potat
 - `skills/init/SKILL.md` as the `init` subcommand
 - `skills/update/SKILL.md` as the `update` subcommand
 - `hooks/session-start.sh` under `hooks.SessionStart`
+
+> **⚠ This section is WRONG — see Errata (2026-04-07) at the bottom of this document.** Component directories must live at the repo ROOT, not inside `.claude-plugin/`. Hooks are registered via `hooks/hooks.json` referenced from the manifest, not inline in `plugin.json`. VERSION/CHANGELOG mirrors are unnecessary.
 
 ---
 
@@ -330,3 +332,79 @@ Ordered task breakdown for the Architect / Coder executing req-004:
 - [GitHub Issue #32732](https://github.com/anthropics/claude-code/issues/32732) — model inheritance hazard referenced in req-002 context (Opus inheritance in subagents).
 - [Keep a Changelog v1.1.0](https://keepachangelog.com/en/1.1.0/) — changelog format used by CHANGELOG.md.
 - [Semantic Versioning](https://semver.org/) — versioning scheme used by VERSION file and release tags.
+
+---
+
+## Errata (2026-04-07, req-004 research)
+
+Researcher task-001 (report: `.couch/requirements/req-004/research/plugin-format.md`) verified this design against official Claude Code plugin docs and found three material errors. The sections above are preserved as historical context; **the research report + amended `.couch/requirements/req-004/tasks.json` are the new source of truth**.
+
+### Error 1 — §4 Target Plugin Layout is wrong (component dirs location)
+
+§4 places `skills/`, `hooks/`, `agents/`, and `references/` directories inside `.claude-plugin/`. **Official docs forbid this.** From https://code.claude.com/docs/en/plugins ("Plugin structure overview"):
+
+> **Common mistake**: Don't put `commands/`, `agents/`, `skills/`, or `hooks/` inside the `.claude-plugin/` directory. Only `plugin.json` goes inside `.claude-plugin/`. All other directories must be at the plugin root level.
+
+**Corrected layout** for this repo (repo root = plugin root):
+
+```
+couch-potato-setup/
+├── .claude-plugin/
+│   ├── plugin.json            (only plugin.json and marketplace.json belong here)
+│   └── marketplace.json
+├── skills/                    (repo root)
+│   ├── init/SKILL.md
+│   └── update/SKILL.md
+├── hooks/                     (repo root)
+│   ├── hooks.json
+│   ├── session-start.sh
+│   └── restrict_write_path.sh
+├── agents/                    (repo root)
+└── references/                (repo root)
+    ├── team-mode/
+    ├── multi-agent-mode/
+    └── schemas.md
+```
+
+VERSION and CHANGELOG.md at repo root are read directly via `${CLAUDE_PLUGIN_ROOT}/VERSION` (plugin root = repo root). No mirrors under `.claude-plugin/` are needed; the §4 entries for `.claude-plugin/VERSION` and `.claude-plugin/CHANGELOG.md` are removed from scope.
+
+### Error 2 — §12 assumed `claude plugin add <path>` exists (it does not)
+
+§12 lists "Confirm the exact CLI command (e.g., `claude plugin add <path>`)" as an open question. **There is no such command.** Per https://code.claude.com/docs/en/plugins and https://code.claude.com/docs/en/plugin-marketplaces:
+
+- **Dev / session-scoped use**: `claude --plugin-dir /path/to/couch-potato-setup` — loads the plugin for that session only.
+- **Persistent install**: two-step marketplace flow:
+  1. `claude plugin marketplace add glitchboyl/couch-potato-setup` (or `./couch-potato-setup` for a local clone)
+  2. `claude plugin install couch-potato@<marketplace-name>`
+  where `<marketplace-name>` is the `name` field of `.claude-plugin/marketplace.json`.
+
+**Consequence**: this repo needs a `.claude-plugin/marketplace.json` file to enable persistent install. That file is a new deliverable in req-004 (task-002a).
+
+### Error 3 — §4 hook registration format is wrong
+
+§4 says plugin.json registers `hooks/session-start.sh` under `hooks.SessionStart`. **Hooks are not registered inline in `plugin.json` that way.** Per the plugins-reference docs, the `plugin.json` `hooks` field is a path pointer to a hooks config file (typically `hooks/hooks.json` at repo root), which contains the standard hooks JSON format:
+
+```json
+{
+  "hooks": {
+    "SessionStart": [
+      { "hooks": [{ "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/hooks/session-start.sh" }] }
+    ],
+    "PreToolUse": [
+      { "matcher": "Write|Edit|MultiEdit", "hooks": [{ "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/hooks/restrict_write_path.sh" }] }
+    ]
+  }
+}
+```
+
+The `plugin.json` manifest references this with `"hooks": "./hooks/hooks.json"`.
+
+### Confirmations (unchanged from design doc)
+
+- **§2 decision** to refactor to plugin format: CONFIRMED.
+- **§3 rationale #1** (subcommand syntax requires plugin format): CONFIRMED.
+- **§5 SOUL persistence via `${CLAUDE_PLUGIN_DATA}`**: CONFIRMED. Both `${CLAUDE_PLUGIN_ROOT}` and `${CLAUDE_PLUGIN_DATA}` are available in skill content via inline substitution (plugins-reference docs: "substituted inline anywhere they appear in skill content, agent content, hook commands").
+- **§6 SessionStart hook script**: CONFIRMED (the script content is correct; only its registration location moves from inline plugin.json to hooks/hooks.json).
+- **§8 init flow three-case branching**: CONFIRMED.
+- **§9 update flow mode branching**: CONFIRMED.
+- **§10 file classification table**: CONFIRMED (paths are logical and should be interpreted at their corrected repo-root locations).

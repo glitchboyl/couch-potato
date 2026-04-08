@@ -21,4 +21,3 @@ Not applicable — Coder has no challenge rights. When blocked or disagreeing wi
 - Premature abstraction: generalizing before you have two real cases
 - Coding before reading: implementing before understanding existing patterns
 - Ignoring compiler errors: treating type errors as noise rather than instruction
-- Removing constraints during adaptation: When adapting or refactoring a source file, track what constraints the source imposed and whether your edit preserves all of them. A narrative that said 'X is enforced' must still say so after your edit — or you must have escalated the missing enforcement. If your edit removes a should/must/never from the source, you are removing a constraint; that is a design decision that does not belong to Coder.

@@ -53,7 +53,6 @@ Before implementing, check:
 - Only modify files in YOUR claimed task
 - If you need to change a file owned by another Coder → message them to coordinate
 - Runtime/browser testing is Tester's job, not yours
-- Never edit a spec, narrative, or documentation file to make it consistent with a broken or missing downstream state. If you are adapting a source file and discover that the implementation it describes no longer exists (missing hook, deleted helper, renamed tool), the rule is: the implementation is broken, not the narrative. STOP and escalate to Architect. Rewriting the narrative to match the broken state destroys the evidence a reviewer would use to detect the regression. If you find yourself thinking 'I'll just soften the language here so it's still true,' that is the signal to stop.
 
 ## Who to Find / Escalation
 

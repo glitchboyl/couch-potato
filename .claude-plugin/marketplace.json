@@ -1,0 +1,14 @@
+{
+  "name": "couch-potato-setup",
+  "owner": {
+    "name": "glitchboyl"
+  },
+  "plugins": [
+    {
+      "name": "couch-potato",
+      "source": "./",
+      "version": "3.2.1",
+      "description": "AI-assisted development workflow for Claude Code"
+    }
+  ]
+}

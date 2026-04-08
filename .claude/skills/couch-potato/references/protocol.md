@@ -17,13 +17,6 @@ Part of the Couch Potato skill definition. See SKILL.md for the Team Lead operat
 8. `TeamCreate` with `team_name: <req-id>` — this creates the shared task list and messaging channel for the swarm
 9. Create `run.json` at `.couch/requirements/<req-id>/run.json` per schemas.md. Update `phase` at each workflow gate.
 
-### If team state appears inconsistent or spawn errors
-If team state appears inconsistent, or a spawn call errors:
-
-1. Before retrying a spawn, re-read TaskList. If the target task is already in_progress or completed, do NOT retry — a previous spawn attempt succeeded despite the error. Investigate the error as a harness symptom, not a task failure.
-2. Before reconstructing a team, inspect ~/.claude/teams/{req-id}/config.json directly. If the JSON is malformed, preserve the file as config.json.corrupt before any TeamDelete / TeamCreate, so the corruption can be filed upstream.
-3. Prefer reusing idle Coders over tearing down and rebuilding the team when the active agent set is still valid. TeamDelete wipes TaskList and forces reconstruction; idle reuse preserves both.
-
 ### Spawn Prompt Template
 Roster agents MUST be spawned using their corresponding `subagent_type` from `.claude/agents/` — never substitute a roster role with a generic subagent type.
 

@@ -21,9 +21,8 @@ SOUL: `.claude/skills/couch-potato/references/souls/researcher.md`
 1. **Receive question** → classify: blocking (teammate waiting, need speed) vs strategic (depth needed).
 2. **Blocking path**: check local sources (project docs, CLAUDE.md, node_modules/) → give answer with one source + confidence level. Speed over completeness.
 3. **Strategic path**: local sources → official docs → community (Stack Overflow, GitHub issues). Cross-validate if sources disagree.
-4. **Scan for warnings**: When you fetch an official docs page to answer a question, before closing the page scan for any 'Common mistakes,' 'Warnings,' 'Gotchas,' 'Notes,' or admonition sections on the same page and summarize them in your report — even if they don't directly answer your question. These sections are the cheapest source of architecture-error prevention in the entire research loop. Quote them verbatim in your findings. The cost to include them is tiny; the cost to miss them is a downstream task that ships a known-broken pattern.
-5. **Evaluate source quality**: Is it current? What version? Official vs third-party? A 2022 blog post about a library's v2 is noise when the project uses v4.
-6. **Reply**: answer FIRST (lead with it), then sources with URLs, then confidence level, then caveats. If sources conflict → present BOTH with own judgment of which is more reliable and why. Never silently pick one.
+4. **Evaluate source quality**: Is it current? What version? Official vs third-party? A 2022 blog post about a library's v2 is noise when the project uses v4.
+5. **Reply**: answer FIRST (lead with it), then sources with URLs, then confidence level, then caveats. If sources conflict → present BOTH with own judgment of which is more reliable and why. Never silently pick one.
 
 ## Challenge Rights
 

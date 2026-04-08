@@ -45,7 +45,61 @@ You: "Add dark mode support"
 
 ## Install
 
-> Requires [Claude Code](https://claude.com/claude-code) with Agent Teams enabled.
+### Workflow modes
+
+Couch Potato installs in one of two modes depending on your environment:
+
+**Team-mode** (recommended): agents communicate directly peer-to-peer using Claude Code's native agent teams feature. Requires Claude Code **v2.1.32+** with `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` set (in your environment or `.claude/settings.json`).
+
+**Multi-agent-mode** (fallback): works on any Claude Code version. The main instance (Team Lead) is the sole orchestrator — all agent-to-agent discussion is relayed through main. No peer-to-peer agent threads; no parallel agent communication. Higher latency and higher main context usage than team-mode. The `/couch-potato:init` skill detects your environment and installs the right mode automatically.
+
+### Persistent install (recommended)
+
+Step 1 — Add the marketplace:
+
+```bash
+claude plugin marketplace add glitchboyl/couch-potato-setup
+```
+
+Or from a local clone:
+
+```bash
+claude plugin marketplace add ./couch-potato-setup
+```
+
+Step 2 — Install the plugin:
+
+```bash
+claude plugin install couch-potato@couch-potato-setup
+```
+
+No restart required after install. Run `/reload-plugins` in an active session to activate.
+
+Step 3 — Run the init skill in your project:
+
+```
+/couch-potato:init
+```
+
+The init skill detects your environment (Claude Code version, agent teams flag), selects team-mode or multi-agent-mode, and installs workflow files, agent definitions, and config.
+
+### Dev / session-scoped use
+
+To load the plugin for a single session without installing:
+
+```bash
+claude --plugin-dir /path/to/couch-potato-setup
+```
+
+Then run `/couch-potato:init` in that session.
+
+### Migrating from v3.1.0 (skill format)
+
+If you installed Couch Potato v3.1.0 using the legacy skill format (`Read setup.md and follow it`), auto-migration to the plugin format (v3.2.0+) is **not supported** in this release. See `docs/plugin-migration-design.md` for the migration design. Manual steps: uninstall the old skill files from `.claude/skills/couch-potato/` and re-run the plugin install flow above.
+
+### Installing v3.1.0 (legacy skill format)
+
+> This is the legacy install path. Use the plugin install above for new installs.
 
 1. Clone this repo somewhere accessible:
    ```bash
@@ -65,7 +119,7 @@ You: "Add dark mode support"
 
 4. Restart Claude Code to pick up new settings.
 
-### Manual setup
+#### Manual setup (v3.1.0)
 
 If auto-detection doesn't fit your project, ask for manual setup — you'll fill in the config values directly.
 

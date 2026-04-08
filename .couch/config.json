@@ -1,0 +1,23 @@
+{
+  "version": "3.0.0",
+  "skill": "couch-potato",
+  "server_ports": {},
+  "project_path": ".",
+  "frontend_path": ".",
+  "check_command": null,
+  "lint_command": null,
+  "build_command": null,
+  "dev_command": null,
+  "policy": {
+    "enable_fast_track": true,
+    "review_prompt_required": true,
+    "model_resolution_priority": ["user_override", "complexity_rule", "task_model", "agent_default"],
+    "default_requires_verification_by_type": {
+      "code": true,
+      "refactor": true,
+      "i18n": false,
+      "style": false,
+      "test": false
+    }
+  }
+}

@@ -4,6 +4,44 @@ All notable changes to this project will be documented in this file. Format: Kee
 
 ## [Unreleased]
 
+## [3.2.1] - 2026-04-08
+
+### Added
+
+- `hooks/restrict_read_path.sh`: Read-path restriction hook restored to plugin tree, registered in `hooks/hooks.json` and both `references/team-mode/SKILL-body.md` and `references/multi-agent-mode/SKILL-body.md` frontmatter; honor-system narrative in "You don't write code" section replaced with harness-enforcement claim (task-001)
+
+### Fixed
+
+- `references/team-mode/SKILL-body.md`, `references/multi-agent-mode/SKILL-body.md`: PreToolUse Write matcher broadened from `Write` to `Write|Edit|MultiEdit` to match `hooks/hooks.json` (task-001)
+
+### Changed
+
+- `.claude-plugin/marketplace.json`: plugin version field `3.2.1` added per relative-path marketplace docs; `version` field removed from `.claude-plugin/plugin.json` (zero callers found — safe to remove per docs guidance) (task-002)
+- `templates/agents/coder.md`, `agents/coder.md`: prop-001 applied — prohibition on rewriting narrative or documentation to mask broken or missing downstream state; escalate to Architect instead (task-003)
+- `templates/skill/references/souls/coder.md`, `references/team-mode/souls/coder.md`, `references/multi-agent-mode/souls/coder.md`: prop-002 applied — new "Failure modes to avoid" bullet on constraint preservation during adaptation (task-004)
+- `templates/agents/researcher.md`, `agents/researcher.md`: prop-003 applied — new Action Framework sub-step to scan docs warnings/gotchas/admonition sections when fetching documentation (task-005)
+- `templates/skill/references/protocol.md`, `references/team-mode/protocol.md`: prop-004 applied — new `### If team state appears inconsistent or spawn errors` subsection under Initialization with protocol response steps (task-006)
+
+## [3.2.0] - 2026-04-07
+
+### Added
+
+- `.claude-plugin/plugin.json`: plugin manifest registering `couch-potato` with `skills/`, `hooks/hooks.json`, and plugin metadata
+- `.claude-plugin/marketplace.json`: marketplace manifest enabling persistent install via `claude plugin marketplace add`
+- `skills/init/SKILL.md`: `/couch-potato:init` subcommand — three-case environment detection (team-mode, flag prompt, upgrade prompt), resume-after-restart via `.couch/setup-state.json`, SOUL persistence to `${CLAUDE_PLUGIN_DATA}/souls/`
+- `skills/update/SKILL.md`: `/couch-potato:update` subcommand — semver changelog delta, verbatim/customizable file classification, mode-switch prompt for multi-agent users whose environment now supports team-mode
+- `hooks/hooks.json`: hook registration file for SessionStart and PreToolUse hooks
+- `hooks/session-start.sh`: SessionStart hook — checks GitHub for newer version and prints update notice; exits 0 silently on network failure
+- `hooks/restrict_write_path.sh`: PreToolUse hook moved from `templates/skill/hooks/` to plugin-root `hooks/` for plugin layout
+- `agents/`: agent definitions (architect, researcher, coder, tester, retrospective) at repo root for plugin layout
+- `references/schemas.md`: shared schemas moved to repo-root `references/` for plugin layout
+- `references/team-mode/`: team-mode workflow (workflow.md, protocol.md, SKILL-body.md, souls/) using native agent-team coordination
+- `references/multi-agent-mode/`: multi-agent-mode workflow (workflow.md, protocol.md, SKILL-body.md, souls/) using hub-and-spoke orchestration; mode-specific Team Lead SOUL emphasizing relay fidelity
+
+### Note
+
+- Legacy `templates/skill/` tree retained for backward reference; full removal deferred to a follow-up
+
 ## [3.1.0] - 2026-04-07
 
 ### Added

@@ -1,0 +1,48 @@
+{
+  "proposals": [
+    {
+      "id": "prop-001",
+      "source_retrospective": "req-004",
+      "status": "applied",
+      "target_file": "templates/agents/coder.md",
+      "section": "Action Framework (new step 3a) or Boundaries",
+      "summary": "Prohibit editing a spec/narrative/doc file to make it consistent with a broken or missing downstream state; require escalation instead.",
+      "proposed_text": "Never edit a spec, narrative, or documentation file to make it consistent with a broken or missing downstream state. If you are adapting a source file and discover that the implementation it describes no longer exists (missing hook, deleted helper, renamed tool), the rule is: the implementation is broken, not the narrative. STOP and escalate to Architect. Rewriting the narrative to match the broken state destroys the evidence a reviewer would use to detect the regression. If you find yourself thinking 'I'll just soften the language here so it's still true,' that is the signal to stop.",
+      "decided_at": "2026-04-07",
+      "decided_by": "user"
+    },
+    {
+      "id": "prop-002",
+      "source_retrospective": "req-004",
+      "status": "applied",
+      "target_file": "templates/skill/references/souls/coder.md",
+      "section": "Failure modes to avoid (append)",
+      "summary": "Train Coder attention to notice when an edit removes a should/must/never constraint from the source file being adapted.",
+      "proposed_text": "When adapting or refactoring a source file, track what constraints the source imposed and whether your edit preserves all of them. A narrative that said 'X is enforced' must still say so after your edit — or you must have escalated the missing enforcement. If your edit removes a should/must/never from the source, you are removing a constraint; that is a design decision that does not belong to Coder.",
+      "decided_at": "2026-04-07",
+      "decided_by": "user"
+    },
+    {
+      "id": "prop-003",
+      "source_retrospective": "req-004",
+      "status": "applied",
+      "target_file": "templates/agents/researcher.md",
+      "section": "Action Framework",
+      "summary": "Require Researcher to scan any docs page they fetch for Common mistakes / Warnings / Gotchas / Notes sections and quote them verbatim in the report, even when not directly asked.",
+      "proposed_text": "When you fetch an official docs page to answer a question, before closing the page scan for any 'Common mistakes,' 'Warnings,' 'Gotchas,' 'Notes,' or admonition sections on the same page and summarize them in your report — even if they don't directly answer your question. These sections are the cheapest source of architecture-error prevention in the entire research loop. Quote them verbatim in your findings. The cost to include them is tiny; the cost to miss them is a downstream task that ships a known-broken pattern.",
+      "decided_at": "2026-04-07",
+      "decided_by": "user"
+    },
+    {
+      "id": "prop-004",
+      "source_retrospective": "req-004",
+      "status": "applied",
+      "target_file": "templates/skill/references/protocol.md",
+      "section": "Initialization — new subsection 'If team state appears inconsistent or spawn errors'",
+      "summary": "Encode system-level response to team/spawn state inconsistency: re-check TaskList before retry; preserve corrupted team config before rebuild; prefer idle reuse over TeamDelete+TeamCreate.",
+      "proposed_text": "If team state appears inconsistent, or a spawn call errors:\n\n1. Before retrying a spawn, re-read TaskList. If the target task is already in_progress or completed, do NOT retry — a previous spawn attempt succeeded despite the error. Investigate the error as a harness symptom, not a task failure.\n2. Before reconstructing a team, inspect ~/.claude/teams/{req-id}/config.json directly. If the JSON is malformed, preserve the file as config.json.corrupt before any TeamDelete / TeamCreate, so the corruption can be filed upstream.\n3. Prefer reusing idle Coders over tearing down and rebuilding the team when the active agent set is still valid. TeamDelete wipes TaskList and forces reconstruction; idle reuse preserves both.",
+      "decided_at": "2026-04-07",
+      "decided_by": "user"
+    }
+  ]
+}
