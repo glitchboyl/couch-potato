@@ -1,3 +1,6 @@
 # Couch Potato
 .couch/requirements/
 .couch/.staging/
+
+# macOS
+.DS_Store
