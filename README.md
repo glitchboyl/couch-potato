@@ -18,6 +18,10 @@ The Team Lead orchestrates everything. You talk to the Team Lead; it spawns and 
 
 Each agent has a **SOUL** — a cognitive style definition that shapes how it thinks, what it prioritizes, and what it deliberately ignores. SOULs create genuine functional complementarity, not just role labels.
 
+## Why "couch potato"?
+
+Because that's the job: lie on the couch, point agents at what you want, and let them handle the rest.
+
 ## How it works
 
 ```
@@ -83,15 +87,24 @@ Step 3 — Run the init skill in your project:
 
 The init skill detects your environment (Claude Code version, agent teams flag), selects team-mode or multi-agent-mode, and installs workflow files, agent definitions, and config.
 
-### Dev / session-scoped use
+### Dev loop (for plugin authors)
 
-To load the plugin for a single session without installing:
+Clone this repo and launch Claude Code pointing at it:
 
 ```bash
 claude --plugin-dir /path/to/couch-potato
 ```
 
-Then run `/couch-potato:init` in that session.
+Edits to plugin source files take effect in the next session — no re-install needed.
+
+For snapshot install (simulates the real user experience):
+
+```bash
+claude plugin marketplace add /path/to/couch-potato
+claude plugin install couch-potato@couch-potato
+```
+
+After any source change, re-run `plugin install` and `/reload-plugins`.
 
 ## Usage
 
@@ -107,15 +120,13 @@ Then describe what you want. The Team Lead handles the rest.
 
 ```
 .claude/
-├── skills/couch-potato/       # Skill definition + references
-│   ├── SKILL.md               # Team Lead instructions
-│   └── references/
-│       ├── workflow.md         # Phase gates
-│       ├── protocol.md        # Spawn rules, initialization
-│       ├── schemas.md          # Data contracts
-│       └── souls/              # Agent cognitive styles
+├── skills/couch-potato/       # Team Lead skill
+│   └── SKILL.md               # Team Lead instructions
 ├── agents/                    # Agent definitions (5 files)
 └── settings.json              # Agent Teams enabled
+
+${CLAUDE_PLUGIN_DATA}/
+└── souls/                     # Your editable agent cognitive styles
 
 .couch/
 ├── config.json                # Project config (committed)
@@ -141,7 +152,7 @@ For unsupported stacks, use manual setup.
 
 ## Customization
 
-- **SOULs** — Edit files in `.claude/skills/couch-potato/references/souls/` to change how agents think
+- **SOULs** — Edit files in `${CLAUDE_PLUGIN_DATA}/souls/` to customize how agents think (created on first `/couch-potato:init`)
 - **Config** — Edit `.couch/config.json` to adjust policies (fast-track, verification defaults, model selection)
 - **Agent definitions** — Edit files in `.claude/agents/` to change tool access or model defaults
 
