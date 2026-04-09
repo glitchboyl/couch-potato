@@ -5,7 +5,7 @@ description: Update the Couch Potato workflow files in this project to the lates
 
 # /couch-potato:update
 
-Update the Couch Potato files installed in this project. Fetches the remote changelog, shows the user what changed since their installed version, updates the project-side agent definitions and Team Lead SKILL.md, and bumps `version` in `.couch/config.json`.
+Update the Couch Potato files installed in this project. Fetches the remote changelog, shows the user what changed since their installed version, updates the project-side agent definitions, and bumps `version` in `.couch/config.json`. The Team Lead skill (`/couch-potato`) is provided by the plugin directly and is not updated from the project side.
 
 Workflow, protocol, schemas, and SOUL defaults live only in the plugin tree and are read by agents via `${CLAUDE_PLUGIN_ROOT}` — no project-side copy exists, so there is nothing to "re-copy" on update. `/reload-plugins` picks up the new plugin content after it has been installed by `claude plugin install`.
 
@@ -89,14 +89,25 @@ Check `mode_switch_offered` in `.couch/config.json`. If `mode_switch_offered` is
 
 Prompt once:
 
-> "You're running the multi-agent-mode workflow. Your Claude Code now supports agent teams. Want to switch to team-mode for better coordination? A mode switch just flips the `mode` field in `.couch/config.json` and regenerates the project-side `SKILL.md` from the team-mode SKILL-body. No other files change — agents read the mode from config at runtime. [Y/N]"
+> "You're running the multi-agent-mode workflow. Your Claude Code now supports agent teams. Want to switch to team-mode for better coordination? A mode switch just flips the `mode` field in `.couch/config.json` — the plugin's Team Lead skill reads the mode at runtime and dispatches to the appropriate SKILL-body. No other files change. [Y/N]"
 
 Set `mode_switch_offered: true` in `.couch/config.json` immediately after prompting (regardless of the user's answer), so this prompt does not repeat on future update runs.
 
-- **If yes**: set `mode: "team-mode"` in `.couch/config.json` and regenerate `.claude/skills/couch-potato/SKILL.md` from `${CLAUDE_PLUGIN_ROOT}/references/team-mode/SKILL-body.md`.
+- **If yes**: set `mode: "team-mode"` in `.couch/config.json`.
 - **If no**: proceed without mode change.
 
 **If the environment still does not satisfy team-mode requirements**: skip the prompt.
+
+---
+
+## Step 5a — Legacy file migration
+
+Before applying updates, clean up files no longer managed by init:
+
+- **`.claude/skills/couch-potato/SKILL.md`** (removed in v3.6.0): this file used to be written by init Step 4e. Starting in v3.6.0 the Team Lead skill is shipped by the plugin directly, and the project-side copy is stale / may shadow the plugin version.
+  - If `.claude/skills/couch-potato/SKILL.md` exists, delete it.
+  - If `.claude/skills/couch-potato/` is then empty, delete the directory too.
+  - Do NOT prompt — this is a one-time invariant cleanup. Log what was removed.
 
 ---
 
@@ -113,7 +124,6 @@ For each file in the classification table below, apply the appropriate update be
 | `agents/coder.md` | `.claude/agents/coder.md` | Verbatim |
 | `agents/tester.md` | `.claude/agents/tester.md` | Verbatim |
 | `agents/retrospective.md` | `.claude/agents/retrospective.md` | Verbatim |
-| — | `.claude/skills/couch-potato/SKILL.md` | Customizable |
 | — | `.couch/config.json` | Customizable |
 | — | `CLAUDE.md` | Customizable |
 
@@ -131,8 +141,6 @@ For each customizable file that exists in the project:
 1. Show the diff between the current file and the incoming version.
 2. Prompt: `[Y] overwrite  [N] keep mine  [D] show diff again`
 3. Apply the user's choice. If [N], leave the file unchanged.
-
-For `.claude/skills/couch-potato/SKILL.md`, the "incoming version" is `${CLAUDE_PLUGIN_ROOT}/references/<installed-mode>/SKILL-body.md`.
 
 ---
 

@@ -141,15 +141,15 @@ ${CLAUDE_PLUGIN_DATA}/
 
 ### What init writes vs what the plugin serves
 
-`/couch-potato:init` writes files **into your project**. The plugin itself ships a separate set of files that agents read directly from the plugin cache path. These two sets are distinct — confusing them is how you end up "fixing" source files that the runtime never loads, or declaring install complete because `config.json` exists while the `/couch-potato` command is still missing.
+`/couch-potato:init` writes files **into your project**. The plugin itself ships a separate set of files that agents read directly from the plugin cache path. These two sets are distinct — confusing them is how you end up "fixing" source files that the runtime never loads.
 
 | Written by `/couch-potato:init` into the project | Shipped by the plugin (read from `~/.claude/plugins/cache/<marketplace>/<plugin>/<version>/`) |
 |---|---|
-| `.couch/config.json` — project configuration | `agents/` — agent definitions (architect, coder, tester, researcher, retrospective) |
-| `.claude/skills/couch-potato/SKILL.md` — **gate file for the `/couch-potato` slash command; without it the command is unavailable** | `skills/init/`, `skills/update/`, `skills/codex-bridge/` — the plugin's own skills |
-| `.claude/agents/*.md` — agent copies | `hooks/` — `SessionStart` and `PreToolUse` hooks |
-| `.couch/requirements/` (gitignored), `.couch/retrospectives/` | `references/` — workflow docs, protocol, schemas, SOUL defaults |
-| CLAUDE.md Couch Potato stanza | |
+| `.couch/config.json` — project configuration | `skills/couch-potato/` — Team Lead skill (provides `/couch-potato`) |
+| `.claude/agents/*.md` — agent copies | `skills/init/`, `skills/update/`, `skills/codex-bridge/` — the plugin's own skills |
+| `.couch/requirements/` (gitignored), `.couch/retrospectives/` | `agents/` — agent definitions (architect, coder, tester, researcher, retrospective) |
+| CLAUDE.md Couch Potato stanza | `hooks/` — `SessionStart` and `PreToolUse` hooks |
+| | `references/` — workflow docs, protocol, schemas, SOUL defaults |
 
 ## Supported stacks
 

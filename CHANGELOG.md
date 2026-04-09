@@ -4,6 +4,27 @@ All notable changes to this project will be documented in this file. Format: Kee
 
 ## [Unreleased]
 
+## [3.6.0] - 2026-04-09
+
+### Changed
+
+- **Team Lead skill (`/couch-potato`) is now provided by the plugin directly.** Previously `/couch-potato:init` wrote a per-project `.claude/skills/couch-potato/SKILL.md` (Step 4e) from a mode-specific body template. Now the plugin ships `skills/couch-potato/SKILL.md` as a thin dispatch stub that reads `.couch/config.json` at runtime and follows the appropriate `${CLAUDE_PLUGIN_ROOT}/references/<mode>/SKILL-body.md`. Agents still read their project context from `.couch/config.json` + `CLAUDE.md` at runtime — project adaptation happens there, not in the SKILL body.
+- `references/team-mode/SKILL-body.md` and `references/multi-agent-mode/SKILL-body.md`: frontmatter stripped; these are now pure body files loaded by the dispatch stub.
+- `skills/init/SKILL.md`: Step 4e removed; `.claude/skills/couch-potato/` no longer created; Step 0/4a/7/8 verification and user messaging updated; the "What init writes vs what the plugin serves" table updated.
+- `skills/update/SKILL.md`: SKILL.md removed from the file classification table; Step 5 Case B mode switch no longer regenerates SKILL.md (just flips `mode` in config); opening paragraph updated.
+
+### Added
+
+- `skills/update/SKILL.md` Step 5a — Legacy file migration: on any update from ≤v3.5.0, automatically delete the stale `.claude/skills/couch-potato/SKILL.md` (and the empty directory) to prevent project-side shadowing of the new plugin-level skill.
+
+### Removed
+
+- "Customizable SKILL.md" path in init/update. The SKILL body is project-agnostic workflow infrastructure; project adaptation lives in `.couch/config.json`, `CLAUDE.md`, and `${CLAUDE_PLUGIN_DATA}/souls/`.
+
+### Upgrade notes
+
+Existing installs: run `claude plugin update couch-potato@couch-potato`, then `/reload-plugins`, then `/couch-potato:update` in each project to trigger the Step 5a migration. After that, `/couch-potato` comes from the plugin and the old `.claude/skills/couch-potato/` directory is gone.
+
 ## [3.5.0] - 2026-04-09
 
 ### Added

@@ -16,15 +16,15 @@ Do not implement beyond what is described here. If you discover a need to modify
 
 ## What init writes vs what the plugin serves
 
-`/couch-potato:init` writes files **into the user's project**. The plugin itself ships a separate set of files that agents read directly from `${CLAUDE_PLUGIN_ROOT}`. Do not confuse them: declaring install complete because `config.json` exists — while `.claude/skills/couch-potato/SKILL.md` is missing — leaves the user without the `/couch-potato` slash command.
+`/couch-potato:init` writes files **into the user's project**. The plugin itself ships a separate set of files that agents read directly from `${CLAUDE_PLUGIN_ROOT}`. Do not confuse them.
 
 | Written by init into the project | Shipped by the plugin (read from `${CLAUDE_PLUGIN_ROOT}`) |
 |---|---|
-| `.couch/config.json` (Step 6) | `${CLAUDE_PLUGIN_ROOT}/agents/` — agent definitions |
-| `.claude/skills/couch-potato/SKILL.md` (Step 4e) — **gate file for the `/couch-potato` slash command; without it the command is unavailable** | `${CLAUDE_PLUGIN_ROOT}/skills/init/`, `skills/update/`, `skills/codex-bridge/` |
-| `.claude/agents/*.md` (Step 4d) | `${CLAUDE_PLUGIN_ROOT}/hooks/` — `SessionStart` / `PreToolUse` hooks |
-| `.couch/requirements/`, `.couch/retrospectives/` (Step 4a) | `${CLAUDE_PLUGIN_ROOT}/references/` — workflow, protocol, schemas, SOULs |
-| CLAUDE.md Couch Potato stanza (Step 4g) | |
+| `.couch/config.json` (Step 6) | `${CLAUDE_PLUGIN_ROOT}/skills/couch-potato/` — Team Lead skill (provides `/couch-potato`) |
+| `.claude/agents/*.md` (Step 4d) | `${CLAUDE_PLUGIN_ROOT}/skills/init/`, `skills/update/`, `skills/codex-bridge/` |
+| `.couch/requirements/`, `.couch/retrospectives/` (Step 4a) | `${CLAUDE_PLUGIN_ROOT}/agents/` — agent definitions |
+| CLAUDE.md Couch Potato stanza (Step 4g) | `${CLAUDE_PLUGIN_ROOT}/hooks/` — `SessionStart` / `PreToolUse` hooks |
+| | `${CLAUDE_PLUGIN_ROOT}/references/` — workflow, protocol, schemas, SOULs |
 
 
 ---
@@ -41,14 +41,13 @@ A previous `/couch-potato:init` run was interrupted (the user was asked to upgra
 
 A prior installation exists. **Do NOT declare init already-complete based on `config.json` existing.** Run the Step 7 post-install verification checklist immediately:
 
-1. `.claude/skills/couch-potato/SKILL.md` — must exist (this is the gate for the `/couch-potato` slash command)
-2. `.claude/agents/*.md` — at least 5 files
-3. `.couch/requirements/` — directory exists
-4. `.couch/retrospectives/` — directory exists
-5. `${CLAUDE_PLUGIN_DATA}/souls/` — at least one `.md` file
+1. `.claude/agents/*.md` — at least 5 files
+2. `.couch/requirements/` — directory exists
+3. `.couch/retrospectives/` — directory exists
+4. `${CLAUDE_PLUGIN_DATA}/souls/` — at least one `.md` file
 
 - **All artifacts present**: installation is genuinely complete. Tell the user "Couch Potato is already installed" and exit.
-- **Any artifact missing**: do NOT exit. Jump directly to the step that produces the missing artifact (e.g., Step 4e for `SKILL.md`, Step 5 for souls, Step 4a for directories), repair, then re-run Step 7. Never rely on `config.json` alone as proof of completeness — it is metadata, not verification.
+- **Any artifact missing**: do NOT exit. Jump directly to the step that produces the missing artifact (e.g., Step 5 for souls, Step 4a for directories), repair, then re-run Step 7. Never rely on `config.json` alone as proof of completeness — it is metadata, not verification.
 
 ### Branch C — neither file exists
 
@@ -203,23 +202,16 @@ With the confirmed adaptation plan and selected mode, install files to the proje
 ### 4a. Create target directories
 
 Create if not present:
-- `.claude/skills/couch-potato/`
 - `.claude/agents/`
 - `.couch/requirements/`
 - `.couch/retrospectives/`
 - If `has_codex: true`: `.claude/skills/codex-bridge/`
 
-**No `references/` tree is created on the project side.** All workflow, protocol, schemas, and SOUL default files live in the plugin tree and are read by agents via `${CLAUDE_PLUGIN_ROOT}` absolute paths. The only project-side file from the skill tree is `.claude/skills/couch-potato/SKILL.md` (Step 4e).
+**No `references/` tree is created on the project side.** All workflow, protocol, schemas, and SOUL default files live in the plugin tree and are read by agents via `${CLAUDE_PLUGIN_ROOT}` absolute paths. The Team Lead skill (`/couch-potato`) is also provided by the plugin directly — init does not write a project-side `SKILL.md`.
 
 ### 4d. Copy agent definitions
 
 Copy ALL `.md` files from `${CLAUDE_PLUGIN_ROOT}/agents/` to `.claude/agents/`. If `agent_conflict_action = "merge"`, do NOT delete existing `.claude/agents/` files — only add/overwrite files present in the source. If `"overwrite"`, clear `.claude/agents/` first (after backing up).
-
-### 4e. Generate SKILL.md from mode-specific body
-
-Read `${CLAUDE_PLUGIN_ROOT}/references/<mode>/SKILL-body.md`. Write it verbatim to `.claude/skills/couch-potato/SKILL.md`. This file is **customizable** — if it already exists, prompt the user:
-
-> An existing `.claude/skills/couch-potato/SKILL.md` was found. Overwrite it? [Y] Overwrite / [N] Keep existing
 
 ### 4f. Copy Codex bridge (conditional)
 
@@ -270,7 +262,7 @@ Write (or update) `.couch/config.json` with the following structure. If a `confi
 
 ```json
 {
-  "version": "3.4.0",
+  "version": "3.6.0",
   "mode": "<mode>",
   "skill": "couch-potato",
   "stack": "<plan.stack_label — omit if not detected>",
@@ -308,13 +300,12 @@ Write (or update) `.couch/config.json` with the following structure. If a `confi
 
 Verify installation is complete:
 
-1. `.claude/skills/couch-potato/SKILL.md` — must exist
-2. `.claude/agents/*.md` — must contain at least 5 files (architect, researcher, coder, tester, retrospective)
-3. `.couch/config.json` — must exist, parse as valid JSON, and contain `version`, `skill`, `mode`
-4. `.couch/requirements/` — must exist as a directory
-5. `.couch/retrospectives/` — must exist as a directory
-6. `${CLAUDE_PLUGIN_DATA}/souls/` — must exist with at least one `.md` file (created in Step 5)
-7. If codex bridge installed: `.claude/skills/codex-bridge/SKILL.md` — must exist
+1. `.claude/agents/*.md` — must contain at least 5 files (architect, researcher, coder, tester, retrospective)
+2. `.couch/config.json` — must exist, parse as valid JSON, and contain `version`, `skill`, `mode`
+3. `.couch/requirements/` — must exist as a directory
+4. `.couch/retrospectives/` — must exist as a directory
+5. `${CLAUDE_PLUGIN_DATA}/souls/` — must exist with at least one `.md` file (created in Step 5)
+6. If codex bridge installed: `.claude/skills/codex-bridge/SKILL.md` — must exist
 
 If verification passes, proceed to Step 8.
 
@@ -335,7 +326,6 @@ Couch Potato installed successfully.
 Mode: <team-mode | multi-agent-mode>
 
 Written files:
-- .claude/skills/couch-potato/SKILL.md   (Team Lead skill body)
 - .claude/agents/                        (agent definitions)
 - .couch/config.json                     (project configuration)
 - .couch/requirements/                   (created, gitignored)
@@ -343,10 +333,11 @@ Written files:
 - ${CLAUDE_PLUGIN_DATA}/souls/           (your editable SOUL copies)
 [if codex] - .claude/skills/codex-bridge/
 
-Workflow, protocol, schemas, and SOUL defaults are read directly from the
-plugin tree (${CLAUDE_PLUGIN_ROOT}/references/) — they are NOT copied into
-the project. To customize an agent's cognitive style, edit the matching file
-in ${CLAUDE_PLUGIN_DATA}/souls/.
+The Team Lead skill (/couch-potato), workflow, protocol, schemas, and SOUL
+defaults are all read directly from the plugin tree
+(${CLAUDE_PLUGIN_ROOT}/) — they are NOT copied into the project. To
+customize an agent's cognitive style, edit the matching file in
+${CLAUDE_PLUGIN_DATA}/souls/.
 
 SOULs define each agent's cognitive style — how they think, communicate, and make decisions.
 Your customizable soul copies are at: ${CLAUDE_PLUGIN_DATA}/souls/

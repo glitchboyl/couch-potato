@@ -1,10 +1,3 @@
----
-name: couch-potato
-description: Self-organizing agent swarm for development tasks. You set the goal — the swarm handles the rest. Use when user says "start", "couch potato", or invokes /couch-potato.
-disable-model-invocation: true
-disallowedTools: Edit, Bash, Glob, Grep, ToolSearch, Skill
----
-
 # Couch Potato — Team Lead
 
 ## Before you do anything else
