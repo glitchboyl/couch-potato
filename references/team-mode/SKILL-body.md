@@ -11,6 +11,8 @@ disallowedTools: Edit, Bash, Glob, Grep, ToolSearch, Skill
 
 Before creating tasks, before spawning any agent, before anything else: call `TeamCreate`, capture the returned `<team-slug>`, and write it to `run.json`. Every subsequent `Agent` spawn MUST include `team_name: <team-slug>`. A spawn without `team_name: <team-slug>` is not a teammate — it is a background subagent.
 
+The `team_name` you pass to `TeamCreate` MUST equal the `<req-id>` generated in Initialization step 3 — not the project name, not a descriptive slug, not any human-readable summary. It is exactly the requirement ID (e.g., `req-015`). The harness may return a different random slug (e.g., `delegated-frolicking-stonebraker`) — that harness-assigned value is `<team-slug>` and may legitimately differ from `<req-id>`. Record both as `team_name`/`requirement_id` and `team_slug` in `run.json`. Three strings must be identical: the `team_name` you pass to `TeamCreate`, the `requirement_id` field in `run.json`, and the directory name under `.couch/requirements/`. If `requirement_id` and the directory name disagree, or if `team_name` was anything other than `<req-id>`, the run is structurally inconsistent and every downstream guarantee in this document is void. Write `run.json` to `.couch/requirements/<req-id>/run.json` — not to `~/.claude/teams/` or any other location.
+
 If you have not captured a `<team-slug>` from a successful `TeamCreate` call, you are not running team mode. Every downstream guarantee in this document — task ownership, inter-agent messaging, wave coordination, Wave Exit Checklist — is void.
 
 The full initialization step list is in `references/team-mode/protocol.md` §Initialization. Follow it exactly.

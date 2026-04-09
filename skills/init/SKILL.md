@@ -14,12 +14,45 @@ Do not implement beyond what is described here. If you discover a need to modify
 
 ---
 
+## What init writes vs what the plugin serves
+
+`/couch-potato:init` writes files **into the user's project**. The plugin itself ships a separate set of files that agents read directly from `${CLAUDE_PLUGIN_ROOT}`. Do not confuse them: declaring install complete because `config.json` exists — while `.claude/skills/couch-potato/SKILL.md` is missing — leaves the user without the `/couch-potato` slash command.
+
+| Written by init into the project | Shipped by the plugin (read from `${CLAUDE_PLUGIN_ROOT}`) |
+|---|---|
+| `.couch/config.json` (Step 6) | `${CLAUDE_PLUGIN_ROOT}/agents/` — agent definitions |
+| `.claude/skills/couch-potato/SKILL.md` (Step 4e) — **gate file for the `/couch-potato` slash command; without it the command is unavailable** | `${CLAUDE_PLUGIN_ROOT}/skills/init/`, `skills/update/`, `skills/codex-bridge/` |
+| `.claude/agents/*.md` (Step 4d) | `${CLAUDE_PLUGIN_ROOT}/hooks/` — `SessionStart` / `PreToolUse` hooks |
+| `.couch/requirements/`, `.couch/retrospectives/` (Step 4a) | `${CLAUDE_PLUGIN_ROOT}/references/` — workflow, protocol, schemas, SOULs |
+| CLAUDE.md Couch Potato stanza (Step 4g) | |
+
+
+---
+
 ## Step 0 — Resume Check
 
-Before doing anything else, check whether `.couch/setup-state.json` exists in the current project.
+Before doing anything else, inspect `.couch/` for state indicators. There are three branches.
 
-- **If it exists**: a previous `/couch-potato:init` run was interrupted (the user was asked to upgrade Claude Code and restart). Read the file. Re-detect the current environment (Step 1). If detection now satisfies Case A or B, proceed directly to Step 3 (Install). Delete `setup-state.json` after successful completion.
-- **If it does not exist**: proceed to Step 1.
+### Branch A — `.couch/setup-state.json` exists
+
+A previous `/couch-potato:init` run was interrupted (the user was asked to upgrade Claude Code and restart). Read the file. Re-detect the current environment (Step 1). If detection now satisfies Case A or B, proceed directly to Step 3 (Install). Delete `setup-state.json` after successful completion.
+
+### Branch B — `setup-state.json` absent but `.couch/config.json` present
+
+A prior installation exists. **Do NOT declare init already-complete based on `config.json` existing.** Run the Step 7 post-install verification checklist immediately:
+
+1. `.claude/skills/couch-potato/SKILL.md` — must exist (this is the gate for the `/couch-potato` slash command)
+2. `.claude/agents/*.md` — at least 5 files
+3. `.couch/requirements/` — directory exists
+4. `.couch/retrospectives/` — directory exists
+5. `${CLAUDE_PLUGIN_DATA}/souls/` — at least one `.md` file
+
+- **All artifacts present**: installation is genuinely complete. Tell the user "Couch Potato is already installed" and exit.
+- **Any artifact missing**: do NOT exit. Jump directly to the step that produces the missing artifact (e.g., Step 4e for `SKILL.md`, Step 5 for souls, Step 4a for directories), repair, then re-run Step 7. Never rely on `config.json` alone as proof of completeness — it is metadata, not verification.
+
+### Branch C — neither file exists
+
+Fresh install. Proceed to Step 1.
 
 **setup-state.json schema**:
 ```json
@@ -66,10 +99,17 @@ Prompt the user:
 > Your Claude Code version supports agent teams, but the `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` flag isn't enabled.
 >
 > Options:
-> - **[Y] Enable flag**: I'll add it to `.claude/settings.json` now. No restart needed. Installs team-mode workflow (recommended — peer-to-peer agent coordination).
+> - **[Y] Enable flag**: I'll add it to `.claude/settings.local.json` now (gitignored, applies to your machine only). No restart needed. Installs team-mode workflow (recommended — peer-to-peer agent coordination).
 > - **[N] Skip flag**: Install multi-agent-mode workflow instead (hub-and-spoke; all agent communication relayed through main — higher latency, higher context usage).
 
-- **If Y**: Write `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS: "1"` to `.claude/settings.json` (create if absent; deep-merge if present, preserving all existing keys). Then proceed to Step 3 with `mode = "team-mode"`.
+- **If Y**: Ask the user where to write the flag:
+
+  > **Where should the flag be written?**
+  > - **[L] settings.local.json** (default — gitignored, applies to your machine only)
+  > - **[S] settings.json** (committed to git — enables team-mode for all collaborators who pull this repo)
+
+  - **If L** (or no input): Write `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS: "1"` to `.claude/settings.local.json` (create if absent; deep-merge if present, preserving all existing keys). Then proceed to Step 3 with `mode = "team-mode"`.
+  - **If S**: Write `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS: "1"` to `.claude/settings.json` (create if absent; deep-merge if present, preserving all existing keys). Then proceed to Step 3 with `mode = "team-mode"`.
 - **If N**: Proceed to Step 3 with `mode = "multi-agent-mode"`. Inform the user about the limitations before proceeding (see Multi-Agent-Mode Limitations below).
 
 ### Case C — Version < 2.1.32
@@ -164,23 +204,12 @@ With the confirmed adaptation plan and selected mode, install files to the proje
 
 Create if not present:
 - `.claude/skills/couch-potato/`
-- `.claude/skills/couch-potato/references/`
-- `.claude/skills/couch-potato/references/souls/`
 - `.claude/agents/`
 - `.couch/requirements/`
 - `.couch/retrospectives/`
 - If `has_codex: true`: `.claude/skills/codex-bridge/`
 
-### 4b. Copy mode-specific workflow files
-
-Copy the selected mode's reference tree from `${CLAUDE_PLUGIN_ROOT}/references/<mode>/` to `.claude/skills/couch-potato/references/`:
-
-- `${CLAUDE_PLUGIN_ROOT}/references/<mode>/workflow.md` → `.claude/skills/couch-potato/references/workflow.md`
-- `${CLAUDE_PLUGIN_ROOT}/references/<mode>/protocol.md` → `.claude/skills/couch-potato/references/protocol.md`
-
-### 4c. Copy shared references
-
-- `${CLAUDE_PLUGIN_ROOT}/references/schemas.md` → `.claude/skills/couch-potato/references/schemas.md`
+**No `references/` tree is created on the project side.** All workflow, protocol, schemas, and SOUL default files live in the plugin tree and are read by agents via `${CLAUDE_PLUGIN_ROOT}` absolute paths. The only project-side file from the skill tree is `.claude/skills/couch-potato/SKILL.md` (Step 4e).
 
 ### 4d. Copy agent definitions
 
@@ -241,7 +270,7 @@ Write (or update) `.couch/config.json` with the following structure. If a `confi
 
 ```json
 {
-  "version": "3.2.0",
+  "version": "3.4.0",
   "mode": "<mode>",
   "skill": "couch-potato",
   "stack": "<plan.stack_label — omit if not detected>",
@@ -267,10 +296,11 @@ Write (or update) `.couch/config.json` with the following structure. If a `confi
 }
 ```
 
-**Required fields from task-002 schema contract** (exact field names — tasks 008 and 009 share this contract):
+**Required fields per `${CLAUDE_PLUGIN_ROOT}/references/config.schema.json`** (`required: ["version", "skill", "mode"]`):
+- `"version"`: string, semver — records the plugin version installed (must match VERSION file)
+- `"skill"`: string — name of the installed skill that drives the swarm (always `"couch-potato"`)
 - `"mode"`: string, one of `"team-mode"` or `"multi-agent-mode"` — records which workflow was installed
-- `"version"`: string, semver — records the plugin version installed (`"3.2.0"` for this release)
-- `"mode_switch_offered"`: boolean — NOT written by init; this field is written by the update skill (Case B) after it has offered a mode switch once. Init does not set it.
+- `"mode_switch_offered"`: boolean, optional — NOT written by init; the update skill (Case B) sets it after offering a mode switch once.
 
 ---
 
@@ -279,14 +309,12 @@ Write (or update) `.couch/config.json` with the following structure. If a `confi
 Verify installation is complete:
 
 1. `.claude/skills/couch-potato/SKILL.md` — must exist
-2. `.claude/skills/couch-potato/references/workflow.md` — must exist
-3. `.claude/skills/couch-potato/references/protocol.md` — must exist
-4. `.claude/skills/couch-potato/references/schemas.md` — must exist
-5. `.claude/agents/*.md` — must contain at least 5 files (architect, researcher, coder, tester, retrospective)
-6. `.couch/config.json` — must exist and parse as valid JSON
-7. `.couch/requirements/` — must exist as a directory
-8. `.couch/retrospectives/` — must exist as a directory
-9. If codex bridge installed: `.claude/skills/codex-bridge/SKILL.md` — must exist
+2. `.claude/agents/*.md` — must contain at least 5 files (architect, researcher, coder, tester, retrospective)
+3. `.couch/config.json` — must exist, parse as valid JSON, and contain `version`, `skill`, `mode`
+4. `.couch/requirements/` — must exist as a directory
+5. `.couch/retrospectives/` — must exist as a directory
+6. `${CLAUDE_PLUGIN_DATA}/souls/` — must exist with at least one `.md` file (created in Step 5)
+7. If codex bridge installed: `.claude/skills/codex-bridge/SKILL.md` — must exist
 
 If verification passes, proceed to Step 8.
 
@@ -307,12 +335,18 @@ Couch Potato installed successfully.
 Mode: <team-mode | multi-agent-mode>
 
 Written files:
-- .claude/skills/couch-potato/   (skill + references)
-- .claude/agents/                (agent definitions)
-- .couch/config.json             (project configuration)
-- .couch/requirements/           (created, gitignored)
-- .couch/retrospectives/         (created)
+- .claude/skills/couch-potato/SKILL.md   (Team Lead skill body)
+- .claude/agents/                        (agent definitions)
+- .couch/config.json                     (project configuration)
+- .couch/requirements/                   (created, gitignored)
+- .couch/retrospectives/                 (created)
+- ${CLAUDE_PLUGIN_DATA}/souls/           (your editable SOUL copies)
 [if codex] - .claude/skills/codex-bridge/
+
+Workflow, protocol, schemas, and SOUL defaults are read directly from the
+plugin tree (${CLAUDE_PLUGIN_ROOT}/references/) — they are NOT copied into
+the project. To customize an agent's cognitive style, edit the matching file
+in ${CLAUDE_PLUGIN_DATA}/souls/.
 
 SOULs define each agent's cognitive style — how they think, communicate, and make decisions.
 Your customizable soul copies are at: ${CLAUDE_PLUGIN_DATA}/souls/
